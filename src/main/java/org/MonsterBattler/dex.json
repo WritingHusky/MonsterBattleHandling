@@ -1,0 +1,41 @@
+{
+    "dex": [
+        {
+            "Name": "Default",
+            "ability": {
+                "Name": "Ability",
+                "Priority": 0,
+                "Power": 0,
+                "Accuracy": 0,
+                "effects": [
+                    {
+                        "Trigger": "Always",
+                        "FailedMsg": "Opps",
+                        "Result": "Swap",
+                        "Value": "",
+                        "Attack-Type": "None",
+                        "Move-Type": "Normal"
+                    }
+                ],
+                "Type": "Normal"
+            },
+            "Ability-Trigger": "None",
+            "Stats": [
+                45,
+                45,
+                45,
+                45,
+                45,
+                45
+            ],
+            "Type": "Normal",
+            "Known-Moves": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ]
+        }
+    ]
+}

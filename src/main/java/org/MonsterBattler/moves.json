@@ -1,0 +1,105 @@
+{
+    "moves": [
+        {
+            "Name": "Swap",
+            "Priority": 0,
+            "Power": 0,
+            "Accuracy": 0,
+            "effects": [
+                {
+                    "Trigger": "Always",
+                    "FailedMsg": "Opps",
+                    "Result": "Swap",
+                    "Value": "",
+                    "Attack-Type": "None",
+                    "Move-Type": "Normal"
+                }
+            ],
+            "Type": "Normal"
+        },
+        {
+            "Name": "Tackle",
+            "Priority": 0,
+            "Power": 100,
+            "Accuracy": 100,
+            "effects": [
+                {
+                    "Trigger": "Always",
+                    "FailedMsg": "Opps",
+                    "Result": "Physical-Damage",
+                    "Value": "100",
+                    "Attack-Type": "Damage",
+                    "Move-Type": "Normal"
+                }
+            ],
+            "Type": "Normal"
+        },
+        {
+            "Name": "Aura Tackle",
+            "Priority": 0,
+            "Power": 50,
+            "Accuracy": 100,
+            "effects": [
+                {
+                    "Trigger": "Always",
+                    "FailedMsg": "Opps",
+                    "Result": "Special-Damage",
+                    "Value": "50",
+                    "Attack-Type": "Damage",
+                    "Move-Type": "Normal"
+                }
+            ],
+            "Type": "Normal"
+        },
+        {
+            "Name": "Set On Fire",
+            "Priority": 1,
+            "Power": 0,
+            "Accuracy": 100,
+            "effects": [
+                {
+                    "Trigger": "Always",
+                    "FailedMsg": "Opps",
+                    "Result": "Burn",
+                    "Value": "100",
+                    "Attack-Type": "State",
+                    "Move-Type": "Fire"
+                }
+            ],
+            "Type": "Fire"
+        },
+        {
+            "Name": "Charm",
+            "Priority": 1,
+            "Power": 0,
+            "Accuracy": 100,
+            "effects": [
+                {
+                    "Trigger": "Always",
+                    "FailedMsg": "Opps",
+                    "Result": "Alter-Stat-Speed",
+                    "Value": "1",
+                    "Attack-Type": "State",
+                    "Move-Type": "Fairy"
+                },
+                {
+                    "Trigger": "Always",
+                    "FailedMsg": "Opps",
+                    "Result": "Alter-Stat-Atk",
+                    "Value": "-1",
+                    "Attack-Type": "State",
+                    "Move-Type": "Fairy"
+                },
+                {
+                    "Trigger": "Always",
+                    "FailedMsg": "Opps",
+                    "Result": "Alter-Stat-Sp.Atk",
+                    "Value": "-1",
+                    "Attack-Type": "State",
+                    "Move-Type": "Fairy"
+                }
+            ],
+            "Type": "Fairy"
+        }
+    ]
+}
