@@ -1,4 +1,6 @@
-package org.MonsterBattler;
+package org.MonsterBattler.InLineRunning;
+
+import org.MonsterBattler.*;
 
 import java.io.IOException;
 import java.util.*;

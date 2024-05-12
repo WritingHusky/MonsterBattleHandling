@@ -1,5 +1,8 @@
-package org.MonsterBattler;
+package org.MonsterBattler.InLineRunning;
 
+import org.MonsterBattler.Effect;
+import org.MonsterBattler.Monster;
+import org.MonsterBattler.MoveEffect;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
