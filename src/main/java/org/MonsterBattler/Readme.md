@@ -21,7 +21,7 @@ To run the program:
 For documentation on how the system works see:
 [Docs currently unavailable]()
 
-## Authors
+## Authors 
 
 Ethan Gelinas
 
