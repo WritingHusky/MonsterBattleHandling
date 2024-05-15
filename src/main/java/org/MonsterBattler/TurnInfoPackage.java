@@ -313,6 +313,7 @@ public class TurnInfoPackage {
             String slot = convertIntToSlot(i);
             this.monSlots[i] = slot;
             this.monsters[i].setSlot(slot);
+            this.monsters[i].setTeam(i / this.monInTeam);
         }
     }
 

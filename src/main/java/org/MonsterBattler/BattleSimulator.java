@@ -40,6 +40,17 @@ public class BattleSimulator {
             String source = currentMove.getSource();
             String target = currentMove.getTarget();
 
+            // This section of code might move / split for the sake of pre-move effects // For now this should work
+            // If the source is dead and the move is not swap then skip the move
+            if (turnInfoPackage.getMonsterBySlot(source).isDead() && !currentMove.getMoveName().equals("Swap")) {
+                continue;
+            }
+            // If the target is dead then skip the move and go to the next one
+            if (turnInfoPackage.getMonsterBySlot(target).isDead()) {
+                continue;
+            }
+
+
             // Go through any pre-move effects stored in the TurnInfoPackage
             MonsterTurnInfo sourceTurnInfo = turnInfoPackage.getMonsterTurnInfoBySlot(source);
             Queue<MoveEffect> sourcePremoveEffects = sourceTurnInfo.getPreMoveEffects();
@@ -150,6 +161,10 @@ public class BattleSimulator {
             if(currentMove.getMoveName().equals("Swap")){
                 continue;
             }
+            // If a monster is dead at this point then they were killed by a move
+            // It is the responsibility of the builder to check if the game is over now // This could be changed to be here
+                // but that would make the code here more complex
+
             // If the target is dead try to switch out
             if (turnInfoPackage.getMonsterBySlot(target).isDead()) {
                 Monster targetMonster = turnInfoPackage.getMonsterBySlot(target);
