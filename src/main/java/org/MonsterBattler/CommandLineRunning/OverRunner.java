@@ -1,4 +1,4 @@
-package org.MonsterBattler.InLineRunning;
+package org.MonsterBattler.CommandLineRunning;
 
 import org.MonsterBattler.*;
 
