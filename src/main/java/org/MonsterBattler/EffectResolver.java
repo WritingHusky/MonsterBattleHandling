@@ -1,6 +1,6 @@
 package org.MonsterBattler;
 
-import java.util.Objects;
+import java.util.*;
 
 public class EffectResolver {
 
@@ -38,43 +38,45 @@ public class EffectResolver {
      * @param turnInfoPackage{TurnInfoPackage}
      */
     private static TurnDisplayElement handleEffect(Effect effect, TurnInfoPackage turnInfoPackage, String attacker, String defender) {
-        TurnDisplayElement msgElement = new TurnDisplayElement();
-        switch (effect.getAttackType()) {
+        TurnDisplayElement msgElement;
+
+        String attackType = effect.getAttackType();
+        attackType = attackType.toUpperCase();
+
+        switch (attackType) {
             case "NONE":
-            case "None":
-                if (effect.getResultCode().equals("SWAP")) {
+                if (effect.getResultCode().equals("SWAP") ||effect.getResultCode().equals("Swap")) {
+                    System.out.println("Swapping: "+ attacker +" with "+defender); // Debugging
+
                     // swap the monsters in the turnInfoPackage
-                    Monster[] list = turnInfoPackage.getMonsters();
                     int attackerIndex = turnInfoPackage.convertSlotToIndex(attacker);
                     int defenderIndex = turnInfoPackage.convertSlotToIndex(defender);
+
                     // Do the swaps
-                    Monster temp = list[attackerIndex];
-
-                    list[attackerIndex] = list[defenderIndex];
-                    list[attackerIndex].setSlot(defender);
-
-                    list[defenderIndex] = temp;
-                    list[defenderIndex].setSlot(attacker);
-
-                    turnInfoPackage.setMonsters(list);
-
-                    msgElement = TurnDisplayElementFactory.create(list[defenderIndex].getName() + " swapped out", attacker, 5,
-                            list[attackerIndex].getName() + " swapped in", defender);
+                    // Copy the array
+                    List<Monster> list =new ArrayList<>(Arrays.asList(turnInfoPackage.getMonsters()));
+                    // Swap the slots
+                    list.get(attackerIndex).setSlot(defender);
+                    list.get(defenderIndex).setSlot(attacker);
+                    // Swap the monsters
+                    Collections.swap(list, attackerIndex, defenderIndex);
+                    // Set the new monsters
+                    turnInfoPackage.setMonsters(list.toArray(new Monster[0]));
+                    // Create the message
+                    msgElement = TurnDisplayElementFactory.create(list.get(defenderIndex).getName() + " swapped out", attacker, 5,
+                            list.get(attackerIndex).getName() + " swapped in", defender);
                     break;
                 }
                 msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect resolver failed for effect: " + effect + ")",
                         attacker, -2, "Opps", defender);
                 // Use default nothing message
                 break;
-            case "Damage":
             case "DAMAGE":
                 msgElement = doDamageAttack(effect, turnInfoPackage, attacker, defender);
                 break;
-            case "Alter":
             case "ALTER":
                 msgElement = doAlterAttack(effect, turnInfoPackage, attacker, defender);
                 break;
-            case "State":
             case "STATE":
                 msgElement = doStateAttack(effect, turnInfoPackage, attacker, defender);
                 break;
@@ -91,15 +93,23 @@ public class EffectResolver {
     private static TurnDisplayElement doDamageAttack(Effect effect, TurnInfoPackage turnInfoPackage, String attacker, String defender) {
         TurnDisplayElement msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect Not implemented: " + effect + ")",
                 attacker, -2, "Opps", defender);
+
+        // Verify the effect code
+        String effectResult = effect.getResultCode();
+        if (effectResult == null|| effectResult.isEmpty()) {
+            // Handle case when effectResult is null / empty
+            return msgElement;
+        }
+        effectResult = effectResult.toUpperCase();
+
         Monster attackerMon = turnInfoPackage.getMonsterBySlot(attacker);
         Monster defenderMon = turnInfoPackage.getMonsterBySlot(defender);
         int type;
         int damage;
-        switch (effect.getResultCode()) {
-            case "None":
+        switch (effectResult) {
+            case "NONE":
                 // Use the default Nothing msg
                 break;
-            case "Physical-Damage":
             case "PHYSICAL-DAMAGE":
 
                 type = typeChart[convertTypeToIndex(attackerMon.getType())][convertTypeToIndex(
@@ -112,7 +122,6 @@ public class EffectResolver {
                         100 + convertTypeToIndex(attackerMon.getType()), "And Took " + damage + " damage", defender);
                 turnInfoPackage.getMonsterBySlot(defender).doDamage(damage, turnInfoPackage);
                 break;
-            case "Special-Damage":
             case "SPECIAL-DAMAGE":
                 type = typeChart[convertTypeToIndex(attackerMon.getType())][convertTypeToIndex(defenderMon.getType())];
                 damage = turnInfoPackage.getMonsterBySlot(defender).getDamageByCalculation(turnInfoPackage, effect,
@@ -123,9 +132,7 @@ public class EffectResolver {
                         100 + convertTypeToIndex(attackerMon.getType()), "And Took " + damage + " damage", defender);
                 turnInfoPackage.getMonsterBySlot(defender).doDamage(damage, turnInfoPackage);
                 break;
-            case "nth-Damage":
             case "NTH-DAMAGE":
-            case "Heal":
             case "HEAL": //TODO Implement.
                 // Begin Alt damage calc effects (currently Empty)
             default:
@@ -141,19 +148,28 @@ public class EffectResolver {
     private static TurnDisplayElement doAlterAttack(Effect effect, TurnInfoPackage turnInfoPackage, String attacker, String defender) {
         TurnDisplayElement msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect Not implemented: " + effect + ")",
                 attacker, -2, "Opps", defender);
-        switch (effect.getResultCode()) {
-            case "None":
+
+        // Verify the effect code
+        String effectResult = effect.getResultCode();
+        if (effectResult == null|| effectResult.isEmpty()) {
+            // Handle case when effectResult is null / empty
+            return msgElement;
+        }
+        effectResult = effectResult.toUpperCase();
+
+        switch (effectResult) {
+            case "NONE":
                 // Use the default Nothing msg
                 break;
             // Begin Weather effects
-            case "Clear Weather":
+            case "CLEAR-WEATHER":
                 clearWeather();
                 /*
                  * Set weather in TIP
                  * Reset GMEs and EOT
                  */
                 break;
-            case "Harsh Sunlight":
+            case "HARSH-SUNLIGHT":
                 clearWeather();
                 /*
                  * Reset GMEs and EOT
@@ -162,7 +178,7 @@ public class EffectResolver {
                  * Set weather in TIP
                  */
                 break;
-            case "Rain":
+            case "RAIN":
                 clearWeather();
                 /*
                  * Reset GMEs and EOT
@@ -171,7 +187,7 @@ public class EffectResolver {
                  * Set weather in TIP
                  */
                 break;
-            case "Sandstorm":
+            case "SANDSTORM":
                 clearWeather();
                 /*
                  * Reset GMEs and EOT
@@ -180,7 +196,7 @@ public class EffectResolver {
                  * Set weather in TIP
                  */
                 break;
-            case "Snow":
+            case "SNOW":
                 clearWeather();
                 /*
                  * Reset GMEs and EOT
@@ -188,7 +204,7 @@ public class EffectResolver {
                  * Set weather in TIP
                  */
                 break;
-            case "Fog":
+            case "FOG":
                 clearWeather();
                 /*
                  * Reset GMEs and EOT
@@ -197,13 +213,13 @@ public class EffectResolver {
                  */
                 break;
             // Begin Terrain effects
-            case "Clear Terrain":
+            case "CLEAR-TERRAIN":
                 clearTerrain();
                 /*
                  * Reset Terrains(GME and EOT) and battle timers
                  */
                 break;
-            case "Electric Terrain":
+            case "ELECTRIC-TERRAIN":
                 clearTerrain();
                 /*
                  * Reset Terrains(GME and EOT) and battle timers
@@ -211,7 +227,7 @@ public class EffectResolver {
                  * Set terrain in TIP and set terrain timer
                  */
                 break;
-            case "Grassy Terrain":
+            case "GRASSY-TERRAIN":
                 clearTerrain();
                 /*
                  * Reset Terrains(GME and EOT) and battle timers
@@ -222,7 +238,7 @@ public class EffectResolver {
                  * Set terrain in TIP and set terrain timer
                  */
                 break;
-            case "Misty Terrain":
+            case "MISTY-TERRAIN":
                 clearTerrain();
                 /*
                  * Reset Terrains(GME and EOT) and battle timers
@@ -230,7 +246,7 @@ public class EffectResolver {
                  * Set terrain in TIP and set terrain timer
                  */
                 break;
-            case "Psychic Terrain":
+            case "PSYCHIC-TERRAIN":
                 clearTerrain();
                 /*
                  * Reset Terrains(GME and EOT) and battle timers
@@ -260,9 +276,18 @@ public class EffectResolver {
     private static TurnDisplayElement doStateAttack(Effect effect, TurnInfoPackage turnInfoPackage, String attacker, String defender) {
         TurnDisplayElement msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect Not implemented: " + effect + ")",
                 attacker, -2, "Opps", defender);
+
+        // Verify the effect code
+        String effectResult = effect.getResultCode();
+        if (effectResult == null|| effectResult.isEmpty()) {
+            // Handle case when effectResult is null / empty
+            return msgElement;
+        }
+        effectResult = effectResult.toUpperCase();
+
         int statValue;
-        switch (effect.getResultCode()) {
-            case "None":
+        switch (effectResult) {
+            case "NONE":
                 // Use the default Nothing msg
                 msgElement = TurnDisplayElementFactory.create("Nothing Happened (State, None)",
                         attacker, -2, "Opps", defender);
@@ -272,11 +297,11 @@ public class EffectResolver {
              * In order deal with the exclusivity of status effects
              * will have to run a clear status effect before handling the
              */
-            case "Clear Status":
+            case "CLEAR-STATUS":
                 clearStatusEffects(turnInfoPackage, defender);
                 turnInfoPackage.getMonsterBySlot(defender).setStatus("Clear Status");
                 break;
-            case "Burn":
+            case "BURN":
                 clearStatusEffects(turnInfoPackage, defender);
                 if (Objects.equals(turnInfoPackage.getTerrain(), "Misty Terrain")) {
                     msgElement = TurnDisplayElementFactory.create(
@@ -287,7 +312,7 @@ public class EffectResolver {
                 turnInfoPackage.getMonsterBySlot(defender).setStatus("Burn");
                 // Results Handled in active tick of Monster
                 break;
-            case "Freeze":
+            case "FREEZE":
                 clearStatusEffects(turnInfoPackage, defender);
                 if (Objects.equals(turnInfoPackage.getWeather(), "Harsh Sunlight")) {
                     msgElement = TurnDisplayElementFactory.create(
@@ -302,7 +327,7 @@ public class EffectResolver {
                 }
                 turnInfoPackage.getMonsterBySlot(defender).setStatus("Freeze");
                 break;
-            case "Paralysis":
+            case "PARALYSIS":
                 clearStatusEffects(turnInfoPackage, defender);
                 if (Objects.equals(turnInfoPackage.getTerrain(), "Misty Terrain")) {
                     msgElement = TurnDisplayElementFactory.create(
@@ -314,7 +339,7 @@ public class EffectResolver {
                 // Add Global Move Effect to randomly null attacking move of defender using
                 // monstercode
                 break;
-            case "Poison":
+            case "POISON":
                 clearStatusEffects(turnInfoPackage, defender);
                 if (Objects.equals(turnInfoPackage.getTerrain(), "Misty Terrain")) {
                     msgElement = TurnDisplayElementFactory.create(
@@ -325,7 +350,7 @@ public class EffectResolver {
                 turnInfoPackage.getMonsterBySlot(defender).setStatus("Poison");
                 // Results Handled in active tick of Monster
                 break;
-            case "Badly Poison":
+            case "BADLY-POISON":
                 clearStatusEffects(turnInfoPackage, defender);
                 if (Objects.equals(turnInfoPackage.getTerrain(), "Misty Terrain")) {
                     msgElement = TurnDisplayElementFactory.create(
@@ -336,7 +361,7 @@ public class EffectResolver {
                 turnInfoPackage.getMonsterBySlot(defender).setStatus("Badly Poison");
                 // Results Handled in active tick of Monster
                 break;
-            case "Sleep":
+            case "SLEEP":
                 if (Objects.equals(turnInfoPackage.getTerrain(), "Electric")) {
                     msgElement = TurnDisplayElementFactory.create("Tried to make " + turnInfoPackage.getMonsterBySlot(defender).getName()
                             + " fall asleep but,", defender, -72, "It fizzled due to electric terrain", defender);
@@ -349,33 +374,33 @@ public class EffectResolver {
                 // Add Global Move Effect to sleep with a timer using monster code
                 break;
             // Begin stat effects
-            case "Alter-Stat-Hp":
+            case "ALTER-STAT-HP":
 
                 statValue = Integer.parseInt(effect.getEffectValue());
                 msgElement = setMsg_StatChange(turnInfoPackage, statValue, 0, defender, attacker);
                 turnInfoPackage.getMonsterBySlot(defender).effectStat(0, statValue);
                 break;
-            case "Alter-Stat-Atk":
+            case "ALTER-STAT-ATK":
                 statValue = Integer.parseInt(effect.getEffectValue());
                 msgElement = setMsg_StatChange(turnInfoPackage, statValue, 1, defender, attacker);
                 turnInfoPackage.getMonsterBySlot(defender).effectStat(1, statValue);
                 break;
-            case "Alter-Stat-Def":
+            case "ALTER-STAT-DEF":
                 statValue = Integer.parseInt(effect.getEffectValue());
                 msgElement = setMsg_StatChange(turnInfoPackage, statValue, 2, defender, attacker);
                 turnInfoPackage.getMonsterBySlot(defender).effectStat(2, statValue);
                 break;
-            case "Alter-Stat-Sp.A":
+            case "ALTER-STAT-SP.A":
                 statValue = Integer.parseInt(effect.getEffectValue());
                 msgElement = setMsg_StatChange(turnInfoPackage, statValue, 3, defender, attacker);
                 turnInfoPackage.getMonsterBySlot(defender).effectStat(3, statValue);
                 break;
-            case "Alter-Stat-SP.D":
+            case "ALTER-STAT-SP.D":
                 statValue = Integer.parseInt(effect.getEffectValue());
                 msgElement = setMsg_StatChange(turnInfoPackage, statValue, 4, defender, attacker);
                 turnInfoPackage.getMonsterBySlot(defender).effectStat(4, statValue);
                 break;
-            case "Alter-Stat-Speed":
+            case "ALTER-STAT-SPEED":
                 statValue = Integer.parseInt(effect.getEffectValue());
                 msgElement = setMsg_StatChange(turnInfoPackage, statValue, 5, defender, attacker);
                 turnInfoPackage.getMonsterBySlot(defender).effectStat(5, statValue);

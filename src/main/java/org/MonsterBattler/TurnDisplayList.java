@@ -44,5 +44,11 @@ public class TurnDisplayList {
         return jsonBuilder.toString();
     }
 
+    @Override
+    public String toString() {
+        return "TurnDisplayList{" +
+                "displayQ=" + displayQ +
+                '}';
+    }
 }
 

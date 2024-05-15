@@ -28,7 +28,8 @@ public class BattleSimulator {
      */
     public static TurnInfoPackage executeTurn(TurnInfoPackage turnInfoPackage) throws DeadMonsterThrowable {
 
-//        System.out.println("Beginning turn");
+        // Might have to check for swaps here
+
         while (!turnInfoPackage.getMoveQueue().isEmpty()) {
             // Pop element of turn Q as MoveEffect
             MoveEffect currentMove = turnInfoPackage.getMoveQueue().poll();
@@ -67,22 +68,24 @@ public class BattleSimulator {
                 turnInfoPackage.getTurnDisplayList()
                         .addMSGToList(new TurnDisplayElement(activation, source, -1, "And Missed", target));
                 break;
-            } else {
+            } else { // Technically this else is not needed, but it's here for clarity
                 // Add the Hit to the display
+
+                // Handle the case where the move is swap (when swap don't add hit to display
+                if(!currentMove.getMoveName().equals("Swap")){
                 Monster sourceMonster = turnInfoPackage.getMonsterBySlot(source);
                 Monster targetMonster = turnInfoPackage.getMonsterBySlot(target);
                 String activation = sourceMonster.getName() + ":" + sourceMonster.getSlot() + " used " + currentMove.getMoveName() + " on " + targetMonster.getName() + ":" + targetMonster.getSlot();
                 turnInfoPackage.getTurnDisplayList()
                         .addMSGToList(new TurnDisplayElement(activation, source, 6, "And Hit", target));
+                }
             }
 
             // Get the effects of the attack
             Queue<Effect> moveIT = currentMove.getMoveEffects();
             // Go through the effects
-//            turnInfoPackage.logger.finest("Beginning effect loop");
             for (Effect effect : moveIT) {
                 // For each effect in effects
-//                turnInfoPackage.logger.finest("doing effects: " + effect.toString());
                 // Do the effect
                 doEffect(effect, turnInfoPackage, source, target);
 
@@ -142,6 +145,11 @@ public class BattleSimulator {
             turnInfoPackage.purgeTimers(source);
 
             boolean deathFlag = turnInfoPackage.getMonsterBySlot(target).isDead();
+
+            // If the move was swap then skip the death check for the target as they will be dead if they swapped out
+            if(currentMove.getMoveName().equals("Swap")){
+                continue;
+            }
             // If the target is dead try to switch out
             if (turnInfoPackage.getMonsterBySlot(target).isDead()) {
                 Monster targetMonster = turnInfoPackage.getMonsterBySlot(target);
@@ -149,6 +157,7 @@ public class BattleSimulator {
                 turnInfoPackage.getTurnDisplayList().getDisplayQ().add(TurnDisplayElementFactory
                         .create(activation, target, 1, "Please switch them out", target));
                 turnInfoPackage.cleanTurnDisplayList();
+                System.out.println("Monster Died: "+ turnInfoPackage.getMonsterBySlot(target).getSlot() + " (target-post-timer)");
                 throw new DeadMonsterThrowable(turnInfoPackage.getMonsterBySlot(target).getSlot());
             }
             if (deathFlag && turnInfoPackage.getMonsterBySlot(source).isDead()){
@@ -157,6 +166,7 @@ public class BattleSimulator {
                 turnInfoPackage.getTurnDisplayList().getDisplayQ().add(TurnDisplayElementFactory
                         .create(activation, source, 1, "Please switch them out", source));
                 turnInfoPackage.cleanTurnDisplayList();
+                System.out.println("Monster Died: "+ turnInfoPackage.getMonsterBySlot(source).getSlot() + " (source-post-timer)");
                 throw new DeadMonsterThrowable(turnInfoPackage.getMonsterBySlot(source).getSlot());
             }
 
