@@ -243,7 +243,7 @@ class EffectResolverTest {
 
         EffectResolver.doEffect(effect, turnInfoPackage, attacker, defender);
 
-        verify(turnInfoPackage, times(6)).getMonsterBySlot(anyString());
+        verify(turnInfoPackage, times(2)).getMonsterBySlot(anyString());
         verify(monster, times(1)).doDamage(10, turnInfoPackage);
         verify(monster, times(0)).doDamage(0, turnInfoPackage);
         verify(turnDisplayList, times(1)).addMSGToList(any(TurnDisplayElement.class));
@@ -259,7 +259,7 @@ class EffectResolverTest {
     }
 
     @Test
-    @DisplayName("T:3.2 Handle effect with Damage attack type and Special-Damage result code")
+    @DisplayName("T:3.3 Handle effect with Damage attack type and Special-Damage result code")
     void handleEffectWithDamageAttackTypeAndSpecialDamageResultCode() {
         when(effect.getTrigger()).thenReturn("Always");
         when(effect.getAttackType()).thenReturn("Damage");
@@ -273,7 +273,7 @@ class EffectResolverTest {
 
         EffectResolver.doEffect(effect, turnInfoPackage, attacker, defender);
 
-        verify(turnInfoPackage, times(6)).getMonsterBySlot(anyString());
+        verify(turnInfoPackage, times(2)).getMonsterBySlot(anyString());
         verify(monster, times(1)).doDamage(10, turnInfoPackage);
         verify(monster, times(0)).doDamage(0, turnInfoPackage);
         verify(turnDisplayList, times(1)).addMSGToList(any(TurnDisplayElement.class));
@@ -304,7 +304,7 @@ class EffectResolverTest {
         EffectResolver.doEffect(effect, turnInfoPackage, attacker, defender);
 
         // Verify nothing else happened that wasn't supposed to
-        verify(turnInfoPackage, times(0)).getMonsterBySlot(anyString());
+        verify(turnInfoPackage, times(2)).getMonsterBySlot(anyString());
         verify(monster, times(0)).effectStat(anyInt(), anyInt());
         verify(monster, times(0)).setStatus(anyString());
         verify(monster, times(0)).doDamage(anyInt(), eq(turnInfoPackage));
@@ -370,7 +370,7 @@ class EffectResolverTest {
         EffectResolver.doEffect(effect, turnInfoPackage, attacker, defender);
 
         // Verify nothing else happened that wasn't supposed to
-        verify(turnInfoPackage, times(0)).getMonsterBySlot(anyString());
+        verify(turnInfoPackage, times(2)).getMonsterBySlot(anyString());
         verify(monster, times(0)).effectStat(anyInt(), anyInt());
         verify(monster, times(0)).setStatus(anyString());
         verify(monster, times(0)).doDamage(anyInt(), eq(turnInfoPackage));

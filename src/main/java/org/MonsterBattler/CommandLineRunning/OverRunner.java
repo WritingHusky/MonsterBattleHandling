@@ -183,10 +183,10 @@ public class OverRunner {
     private static void displayTurn(TurnDisplayList turnDisplayList) {
         SOP("Displaying turn info");
         int count = 0;
-        for (TurnDisplayElement element : turnDisplayList.getDisplayQ()) {
+        for (TurnDisplayElement element : turnDisplayList.getDisplayList()) {
             SOP("display element: " + count);
-            SOP(element.getActivationMsg());
-            SOP(element.getResultMsg());
+//            SOP(element.getActivationMsg());
+//            SOP(element.getResultMsg()); // TODO Redo the display
             count++;
 
         }

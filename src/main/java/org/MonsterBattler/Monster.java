@@ -131,32 +131,48 @@ public class Monster {
 
         TurnDisplayElement msgElement = new TurnDisplayElement();
         int damage;
+        String message;
         switch (this.getStatus()) {
             case "Burn":
-
+                // Burn does 1/16 of the max HP
                 damage = this.getMaxHp() / 16;
+                // It does min 1 damage
                 if (damage <= 0)
                     damage = 1;
+                // Do the damage
                 this.doDamage(damage, turnInfoPackage);
-                msgElement.setElement(this.name + " was hurt by it's Burn", this.slot, 71,
-                        this.name + " took " + damage + " damage", this.slot);
-
+                // Create the message
+                message = this.getName() + ":" + this.getMonsterCode() + " was hurt by it's Burn and took " + damage + " damage";
+                msgElement = TurnDisplayElementFactory.create("Post Effect", message);
+                // Increase the status timer
+                this.statusTimer++;
                 break;
             case "Poison":
+                // Poison does 1/8 of the max HP
                 damage = this.getMaxHp() / 8;
+                // It does min 1 damage
                 if (damage <= 0)
                     damage = 1;
+                // Do the damage
                 this.doDamage(damage, turnInfoPackage);
-                msgElement.setElement(this.name + " was hurt by Poison", this.slot, 74,
-                        this.name + " took " + damage + " damage", this.slot);
+                // Create the message
+                message = this.getName() + ":" + this.getMonsterCode() + " was hurt by Poison and took " + damage + " damage";
+                msgElement = TurnDisplayElementFactory.create("Post Effect", message);
+                // Increase the status timer
+                this.statusTimer++;
                 break;
             case "Badly Poison":
+                // Badly Poison does 1/16 of the max HP + 1/16 of the max HP for each turn
                 damage = (this.getMaxHp() + this.getMaxHp() * this.statusTimer) / 16;
+                // It does min 1 damage
                 if (damage <= 0)
                     damage = 1;
+                // Do the damage
                 this.doDamage(damage, turnInfoPackage);
-                msgElement.setElement(this.name + " was hurt from being Badly Poisoned", this.slot, 75,
-                        this.name + " took " + damage + " damage", this.slot);
+                // Create the message
+                message = this.getName() + ":" + this.getMonsterCode() + " was hurt by Badly Poisoned and took " + damage + " damage";
+                msgElement = TurnDisplayElementFactory.create("Post Effect", message);
+                // Increase the status timer
                 this.statusTimer++;
                 break;
             default:

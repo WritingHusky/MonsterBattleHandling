@@ -13,7 +13,7 @@ public class EffectResolver {
         if (!doesEffectTrigger(effect, turnInfoPackage)) {
             // If the effect does not trigger then set the failed the msg
 
-            msgElement = TurnDisplayElementFactory.create(effect.getFailedTriggerMSG(), attacker, -1, "", defender);
+            msgElement = TurnDisplayElementFactory.create("Move Header", effect.getFailedTriggerMSG());
 //            System.out.println("Missed: " + msgElement); // Debugging
             return;
         }
@@ -46,8 +46,6 @@ public class EffectResolver {
         switch (attackType) {
             case "NONE":
                 if (effect.getResultCode().equals("SWAP") ||effect.getResultCode().equals("Swap")) {
-                    System.out.println("Swapping: "+ attacker +" with "+defender); // Debugging
-
                     // swap the monsters in the turnInfoPackage
                     int attackerIndex = turnInfoPackage.convertSlotToIndex(attacker);
                     int defenderIndex = turnInfoPackage.convertSlotToIndex(defender);
@@ -63,12 +61,12 @@ public class EffectResolver {
                     // Set the new monsters
                     turnInfoPackage.setMonsters(list.toArray(new Monster[0]));
                     // Create the message
-                    msgElement = TurnDisplayElementFactory.create(list.get(defenderIndex).getName() + " swapped out", attacker, 5,
-                            list.get(attackerIndex).getName() + " swapped in", defender);
+                    String message = list.get(attackerIndex).getName() + ":"+ list.get(attackerIndex).getMonsterCode()
+                            + " swapped out and " +  list.get(defenderIndex).getName() + ":" + list.get(defenderIndex).getMonsterCode() + " swapped in";
+                    msgElement = TurnDisplayElementFactory.create("Message Header", message);
                     break;
                 }
-                msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect resolver failed for effect: " + effect + ")",
-                        attacker, -2, "Opps", defender);
+                msgElement = TurnDisplayElementFactory.createErrorEffectResolver(effect);
                 // Use default nothing message
                 break;
             case "DAMAGE":
@@ -83,16 +81,14 @@ public class EffectResolver {
             default:
 //                turnInfoPackage.logger.info("Effect attackType not handled: " + effect.getAttackType()
 //                        + "\nFull effect: " + effect);
-                msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect resolver failed for effect: " + effect + ")",
-                        attacker, -2, "Opps", defender);
+                msgElement = TurnDisplayElementFactory.createErrorEffectResolver(effect);
                 break;
         }
         return msgElement;
     }
 
     private static TurnDisplayElement doDamageAttack(Effect effect, TurnInfoPackage turnInfoPackage, String attacker, String defender) {
-        TurnDisplayElement msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect Not implemented: " + effect + ")",
-                attacker, -2, "Opps", defender);
+        TurnDisplayElement msgElement = TurnDisplayElementFactory.createErrorImplementation(effect);
 
         // Verify the effect code
         String effectResult = effect.getResultCode();
@@ -102,52 +98,55 @@ public class EffectResolver {
         }
         effectResult = effectResult.toUpperCase();
 
+        // Get the monsters for the attack
         Monster attackerMon = turnInfoPackage.getMonsterBySlot(attacker);
         Monster defenderMon = turnInfoPackage.getMonsterBySlot(defender);
+
+        // define some variables
         int type;
         int damage;
+
+        // Handle the different cases
         switch (effectResult) {
             case "NONE":
                 // Use the default Nothing msg
                 break;
             case "PHYSICAL-DAMAGE":
-
                 type = typeChart[convertTypeToIndex(attackerMon.getType())][convertTypeToIndex(
                         defenderMon.getType())];
 
-                damage = turnInfoPackage.getMonsterBySlot(defender).getDamageByCalculation(turnInfoPackage, effect,
+                damage = defenderMon.getDamageByCalculation(turnInfoPackage, effect,
                         attacker, true, false, (Math.random() * 15 + 85) / 100, type);
-                msgElement = TurnDisplayElementFactory.create(turnInfoPackage.getMonsterBySlot(defender).getName()
-                                + ":" + turnInfoPackage.getMonsterBySlot(defender).getSlot() + " was hit", attacker,
-                        100 + convertTypeToIndex(attackerMon.getType()), "And Took " + damage + " damage", defender);
-                turnInfoPackage.getMonsterBySlot(defender).doDamage(damage, turnInfoPackage);
+
+                String message = defenderMon.getName() + ":" + defenderMon.getMonsterCode() + " took " + damage + " damage";
+                msgElement = TurnDisplayElementFactory.create("Effect", message);
+
+                defenderMon.doDamage(damage, turnInfoPackage);
                 break;
             case "SPECIAL-DAMAGE":
                 type = typeChart[convertTypeToIndex(attackerMon.getType())][convertTypeToIndex(defenderMon.getType())];
-                damage = turnInfoPackage.getMonsterBySlot(defender).getDamageByCalculation(turnInfoPackage, effect,
+
+                damage = defenderMon.getDamageByCalculation(turnInfoPackage, effect,
                         attacker, false,
                         false, (Math.random() * 15 + 85) / 100, type);
-                msgElement = TurnDisplayElementFactory.create(turnInfoPackage.getMonsterBySlot(defender).getName()
-                                + ":" + turnInfoPackage.getMonsterBySlot(defender).getSlot() + " was hit", attacker,
-                        100 + convertTypeToIndex(attackerMon.getType()), "And Took " + damage + " damage", defender);
-                turnInfoPackage.getMonsterBySlot(defender).doDamage(damage, turnInfoPackage);
+
+                message = defenderMon.getName() + ":" + defenderMon.getMonsterCode() + " took " + damage + " damage";
+                msgElement = TurnDisplayElementFactory.create("Effect", message);
+
+                defenderMon.doDamage(damage, turnInfoPackage);
                 break;
             case "NTH-DAMAGE":
             case "HEAL": //TODO Implement.
                 // Begin Alt damage calc effects (currently Empty)
             default:
-                msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect resolver failed for effect: " + effect + ")",
-                        attacker, -2, "Opps", defender);
-//                turnInfoPackage.logger.info("Damage Attack: Effect not handled. ResultCode: " + effect.getResultCode()
-//                        + "\nFull effect: " + effect);
+                msgElement = TurnDisplayElementFactory.createErrorImplementation(effect);
                 break;
         }
         return msgElement;
     }
 
     private static TurnDisplayElement doAlterAttack(Effect effect, TurnInfoPackage turnInfoPackage, String attacker, String defender) {
-        TurnDisplayElement msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect Not implemented: " + effect + ")",
-                attacker, -2, "Opps", defender);
+        TurnDisplayElement msgElement = TurnDisplayElementFactory.createErrorImplementation(effect);
 
         // Verify the effect code
         String effectResult = effect.getResultCode();
@@ -157,6 +156,7 @@ public class EffectResolver {
         }
         effectResult = effectResult.toUpperCase();
 
+        // Handle the different cases
         switch (effectResult) {
             case "NONE":
                 // Use the default Nothing msg
@@ -256,10 +256,7 @@ public class EffectResolver {
                  */
                 break;
             default:
-                msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect resolver failed for effect: " + effect + ")",
-                        attacker, -2, "Opps", defender);
-//                turnInfoPackage.logger.info("Alter Attack: Effect not handled. ResultCode: " + effect.getResultCode()
-//                        + "\nFull effect: " + effect);
+                msgElement = TurnDisplayElementFactory.createErrorImplementation(effect);
                 break;
         }
         return msgElement;
@@ -274,8 +271,7 @@ public class EffectResolver {
     }
 
     private static TurnDisplayElement doStateAttack(Effect effect, TurnInfoPackage turnInfoPackage, String attacker, String defender) {
-        TurnDisplayElement msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect Not implemented: " + effect + ")",
-                attacker, -2, "Opps", defender);
+        TurnDisplayElement msgElement = TurnDisplayElementFactory.createErrorImplementation(effect);
 
         // Verify the effect code
         String effectResult = effect.getResultCode();
@@ -285,12 +281,19 @@ public class EffectResolver {
         }
         effectResult = effectResult.toUpperCase();
 
+        // Define some variables
+        String message;
         int statValue;
+        boolean alterStat = false;
+        int statIndex = 0;
+        Monster attackerMon = turnInfoPackage.getMonsterBySlot(attacker);
+        Monster defenderMon = turnInfoPackage.getMonsterBySlot(defender);
+
+        // Handle the different cases
         switch (effectResult) {
             case "NONE":
                 // Use the default Nothing msg
-                msgElement = TurnDisplayElementFactory.create("Nothing Happened (State, None)",
-                        attacker, -2, "Opps", defender);
+                msgElement = TurnDisplayElementFactory.create("Error","Nothing Happened (State, None)");
                 break;
             // Begin Status effects
             /*
@@ -298,120 +301,169 @@ public class EffectResolver {
              * will have to run a clear status effect before handling the
              */
             case "CLEAR-STATUS":
+                // Clear all status effects
                 clearStatusEffects(turnInfoPackage, defender);
-                turnInfoPackage.getMonsterBySlot(defender).setStatus("Clear Status");
+
+                // Build the message
+                message = "Cleared Status of " + defenderMon.getName() + ":" + defenderMon.getMonsterCode();
+                msgElement = TurnDisplayElementFactory.create("Effect", message);
+
+                // Set the status to clear
+                defenderMon.setStatus("Clear Status");
                 break;
             case "BURN":
+                // Clear all status effects
                 clearStatusEffects(turnInfoPackage, defender);
+
+                // Handle the cases where the status fizzles
                 if (Objects.equals(turnInfoPackage.getTerrain(), "Misty Terrain")) {
-                    msgElement = TurnDisplayElementFactory.create(
-                            "Tried to Burn " + turnInfoPackage.getMonsterBySlot(defender).getName() + " but,", defender,
-                            -71, "It fizzled due to misty terrain", defender);
+                    message = "Tried to Burn " + defenderMon.getName() + " but," +
+                            "it fizzled due to misty terrain";
+                    msgElement = TurnDisplayElementFactory.create("Effect", message);
                     break;
                 }
-                turnInfoPackage.getMonsterBySlot(defender).setStatus("Burn");
+                // Set the status to Burn
+                defenderMon.setStatus("Burn");
                 // Results Handled in active tick of Monster
                 break;
             case "FREEZE":
+                // Clear all status effects
                 clearStatusEffects(turnInfoPackage, defender);
+
+                // Handle the cases where the status fizzles
                 if (Objects.equals(turnInfoPackage.getWeather(), "Harsh Sunlight")) {
-                    msgElement = TurnDisplayElementFactory.create(
-                            "Tried to Freeze " + turnInfoPackage.getMonsterBySlot(defender).getName() + " but,",
-                            defender, -72, "Then was thawed out by the sun", defender);
+                    message = "Tried to Freeze " + defenderMon.getName() + " but," +
+                            "was thawed out by the sun";
+                    msgElement = TurnDisplayElementFactory.create("Effect", message);
                     break;
                 } else if (Objects.equals(turnInfoPackage.getTerrain(), "Misty Terrain")) {
-                    msgElement = TurnDisplayElementFactory.create(
-                            "Tried to Freeze " + turnInfoPackage.getMonsterBySlot(defender).getName() + " but,",
-                            defender, -72, "It fizzled due to misty terrain", defender);
+                    message = "Tried to Freeze " + defenderMon.getName() + " but," +
+                            "it fizzled due to misty terrain";
+                    msgElement = TurnDisplayElementFactory.create("Effect", message);
                     break;
                 }
-                turnInfoPackage.getMonsterBySlot(defender).setStatus("Freeze");
+
+                // Set the status to Freeze
+                defenderMon.setStatus("Freeze");
+
+                // Build the message
+                message = "Froze " + defenderMon.getName() + ":" + defenderMon.getMonsterCode();
+                msgElement = TurnDisplayElementFactory.create("Effect", message);
+
                 break;
             case "PARALYSIS":
+                // Clear all status effects
                 clearStatusEffects(turnInfoPackage, defender);
+
+                // Handle the cases where the status fizzles
                 if (Objects.equals(turnInfoPackage.getTerrain(), "Misty Terrain")) {
-                    msgElement = TurnDisplayElementFactory.create(
-                            "Tried to Paralyze " + turnInfoPackage.getMonsterBySlot(defender).getName() + " but,",
-                            defender, -73, "It fizzled due to misty terrain", defender);
+                    message = "Tried to Paralyze " + defenderMon.getName() + " but," +
+                            "it fizzled due to misty terrain";
+                    msgElement = TurnDisplayElementFactory.create("Effect", message);
                     break;
                 }
-                turnInfoPackage.getMonsterBySlot(defender).setStatus("Paralysis");
-                // Add Global Move Effect to randomly null attacking move of defender using
-                // monstercode
+                // Set the status to Paralysis
+                defenderMon.setStatus("Paralysis");
+
+                // Build the message
+                message = "Paralyzed " + defenderMon.getName() + ":" + defenderMon.getMonsterCode();
+                msgElement = TurnDisplayElementFactory.create("Effect", message);
+
+                //TODO Add Global Move Effect to randomly null attacking move of defender using
                 break;
             case "POISON":
+                // Clear all status effects
                 clearStatusEffects(turnInfoPackage, defender);
+
+                // Handle the cases where the status fizzles
                 if (Objects.equals(turnInfoPackage.getTerrain(), "Misty Terrain")) {
-                    msgElement = TurnDisplayElementFactory.create(
-                            "Tried to Poison " + turnInfoPackage.getMonsterBySlot(defender).getName() + " but,",
-                            defender, -74, "It fizzled due to misty terrain", defender);
+                    message = "Tried to Poison " + defenderMon.getName() + " but," +
+                            "it fizzled due to misty terrain";
+                    msgElement = TurnDisplayElementFactory.create("Effect", message);
                     break;
                 }
-                turnInfoPackage.getMonsterBySlot(defender).setStatus("Poison");
+                // Set the status to Poison
+                defenderMon.setStatus("Poison");
+
+                // Build the message
+                message = "Poisoned " + defenderMon.getName() + ":" + defenderMon.getMonsterCode();
+                msgElement = TurnDisplayElementFactory.create("Effect", message);
                 // Results Handled in active tick of Monster
                 break;
             case "BADLY-POISON":
+                // Clear all status effects
                 clearStatusEffects(turnInfoPackage, defender);
+
+                // Handle the cases where the status fizzles
                 if (Objects.equals(turnInfoPackage.getTerrain(), "Misty Terrain")) {
-                    msgElement = TurnDisplayElementFactory.create(
-                            "Tried to Badly Poison " + turnInfoPackage.getMonsterBySlot(defender).getName() + " but,",
-                            defender, -75, "It fizzled due to misty terrain", defender);
+                    message = "Tried to Badly Poison " + defenderMon.getName() + " but," +
+                            "it fizzled due to misty terrain";
+                    msgElement = TurnDisplayElementFactory.create("Effect", message);
                     break;
                 }
-                turnInfoPackage.getMonsterBySlot(defender).setStatus("Badly Poison");
+
+                // Set the status to Badly Poison
+                defenderMon.setStatus("Badly Poison");
+
+                // Build the message
+                message = "Badly Poisoned " + defenderMon.getName() + ":" + defenderMon.getMonsterCode();
+                msgElement = TurnDisplayElementFactory.create("Effect", message);
                 // Results Handled in active tick of Monster
                 break;
             case "SLEEP":
+                // Clear all status effects
+                clearStatusEffects(turnInfoPackage, defender);
+
+                // Handle the cases where the status fizzles
                 if (Objects.equals(turnInfoPackage.getTerrain(), "Electric")) {
-                    msgElement = TurnDisplayElementFactory.create("Tried to make " + turnInfoPackage.getMonsterBySlot(defender).getName()
-                            + " fall asleep but,", defender, -72, "It fizzled due to electric terrain", defender);
+                    message = "Tried to make " + defenderMon.getName() + " fall asleep but," +
+                            "it fizzled due to electric terrain";
+                    msgElement = TurnDisplayElementFactory.create("Effect", message);
                     break;
                 } else if (Objects.equals(turnInfoPackage.getTerrain(), "Misty Terrain")) {
-                    msgElement = TurnDisplayElementFactory.create("Tried to make " + turnInfoPackage.getMonsterBySlot(defender).getName()
-                            + " fall asleep but,", defender, -72, "It fizzled due to misty terrain", defender);
+                    message = "Tried to make " + defenderMon.getName() + " fall asleep but," +
+                            "it fizzled due to misty terrain";
+                    msgElement = TurnDisplayElementFactory.create("Effect", message);
                     break;
                 }
                 // Add Global Move Effect to sleep with a timer using monster code
                 break;
             // Begin stat effects
+            // Code is the same for all stat effects, so we will handle them all-in-one at the end
             case "ALTER-STAT-HP":
-
-                statValue = Integer.parseInt(effect.getEffectValue());
-                msgElement = setMsg_StatChange(turnInfoPackage, statValue, 0, defender, attacker);
-                turnInfoPackage.getMonsterBySlot(defender).effectStat(0, statValue);
+                alterStat = true;
+//                statIndex = 0;
                 break;
             case "ALTER-STAT-ATK":
-                statValue = Integer.parseInt(effect.getEffectValue());
-                msgElement = setMsg_StatChange(turnInfoPackage, statValue, 1, defender, attacker);
-                turnInfoPackage.getMonsterBySlot(defender).effectStat(1, statValue);
+                alterStat = true;
+                statIndex = 1;
                 break;
             case "ALTER-STAT-DEF":
-                statValue = Integer.parseInt(effect.getEffectValue());
-                msgElement = setMsg_StatChange(turnInfoPackage, statValue, 2, defender, attacker);
-                turnInfoPackage.getMonsterBySlot(defender).effectStat(2, statValue);
+                alterStat = true;
+                statIndex = 2;
                 break;
             case "ALTER-STAT-SP.A":
-                statValue = Integer.parseInt(effect.getEffectValue());
-                msgElement = setMsg_StatChange(turnInfoPackage, statValue, 3, defender, attacker);
-                turnInfoPackage.getMonsterBySlot(defender).effectStat(3, statValue);
+                alterStat = true;
+                statIndex = 3;
                 break;
             case "ALTER-STAT-SP.D":
-                statValue = Integer.parseInt(effect.getEffectValue());
-                msgElement = setMsg_StatChange(turnInfoPackage, statValue, 4, defender, attacker);
-                turnInfoPackage.getMonsterBySlot(defender).effectStat(4, statValue);
+                alterStat = true;
+                statIndex = 4;
                 break;
             case "ALTER-STAT-SPEED":
-                statValue = Integer.parseInt(effect.getEffectValue());
-                msgElement = setMsg_StatChange(turnInfoPackage, statValue, 5, defender, attacker);
-                turnInfoPackage.getMonsterBySlot(defender).effectStat(5, statValue);
+                alterStat = true;
+                statIndex = 5;
                 break;
             default:
-                msgElement = TurnDisplayElementFactory.create("Nothing Happened (Effect resolver failed for effect: " + effect + ")",
-                        attacker, -2, "Opps", defender);
-//                turnInfoPackage.logger.config("State Attack: Effect not handled. ResultCode: " + effect.getResultCode()
-//                        + "\nFull effect: " + effect);
+                msgElement = TurnDisplayElementFactory.createErrorImplementation(effect);
                 break;
         }
+        if(alterStat){
+            statValue = Integer.parseInt(effect.getEffectValue());
+            msgElement = setMsg_StatChange(turnInfoPackage, statValue, statIndex, defender, attacker);
+            defenderMon.effectStat(statIndex, statValue);
+        }
+
         return msgElement;
     }
 
@@ -424,7 +476,7 @@ public class EffectResolver {
         String amount ="";
         if (statValue == 0) {
             // if the change is nothing
-            msgElement = TurnDisplayElementFactory.create("Nothing happened as stat value of the change is 0", defender, -1, "Nothing Happened", defender);
+            return TurnDisplayElementFactory.create("Error","Stat was not changed as the value was 0");
         } else if (statValue >1){
             amount =  "Sharply";
         }
@@ -453,12 +505,14 @@ public class EffectResolver {
         }
 
         boolean increase = statValue > 0;
-        if (increase) { //TODO add the case of the stat not changing
-            msgElement = TurnDisplayElementFactory.create(turnInfoPackage.getMonsterBySlot(defender).getName() + " has its " + stat + "risen" ,
-                    attacker, 10 + index, "Their " +stat +" rose "+ amount, defender);
+        String message;
+        Monster defenderMon = turnInfoPackage.getMonsterBySlot(defender);
+        if (increase) { // The case of the stat not changing is handled at the beginning
+            message = defenderMon.getName() + ":" + defenderMon.getMonsterCode() + " has its " + stat + "raised " + amount;
+            msgElement = TurnDisplayElementFactory.create("Effect", message);
         } else {
-            msgElement = TurnDisplayElementFactory.create(turnInfoPackage.getMonsterBySlot(defender).getName() + " has its " + stat + "lowered",
-                    attacker, 10 + index, "Their " +stat +" fell "+ amount, defender);
+            message = defenderMon.getName() + ":" + defenderMon.getMonsterCode() + " has its " + stat + "lowered " + amount;
+            msgElement = TurnDisplayElementFactory.create("Effect", message);
         }
 
         // TO DO add the case of the stat not changing

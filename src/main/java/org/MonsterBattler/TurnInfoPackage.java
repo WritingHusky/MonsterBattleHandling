@@ -1,17 +1,8 @@
 package org.MonsterBattler;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.util.*;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 public class TurnInfoPackage {
     public int monCountTotal;
@@ -126,18 +117,21 @@ public class TurnInfoPackage {
     }
 
     public void cleanTurnDisplayList() {
-//        System.out.println("Cleaning up displayList: " + this.turnDisplayList.getDisplayQ().toString());
-        Queue<TurnDisplayElement> newQ = new LinkedList<>();
-        // Remove all Instances of "empty" turn display elements
-        for (TurnDisplayElement displayElement : this.turnDisplayList.getDisplayQ()) {
-            if (displayElement.getMsgCode() != 2) {
-                newQ.add(displayElement);
+        // Copy the current display list
+        ArrayList<TurnDisplayElement> newList = new ArrayList<>();
+
+        // Only add non-error messages to the new list
+        for (TurnDisplayElement displayElement : this.turnDisplayList.getDisplayList()) {
+            if (!Objects.equals(displayElement.messageType, "Error")) {
+                newList.add(displayElement);
             }
 //            else {
 ////                System.out.println("Removing element: " + displayElement);
+//                  // Might want to log this better as having an error message in the display list is not good (kinda)
 //            }
         }
-        this.turnDisplayList.setDisplayQ(newQ);
+        // Set the new display list
+        this.turnDisplayList.setDisplayList(newList);
 //        this.logger.finest("Cleaned up displayList: " + this.turnDisplayList.getDisplayQ().toString());
     }
 
@@ -313,6 +307,7 @@ public class TurnInfoPackage {
             String slot = convertIntToSlot(i);
             this.monSlots[i] = slot;
             this.monsters[i].setSlot(slot);
+            this.monsters[i].setMonsterCode(slot);
             this.monsters[i].setTeam(i / this.monInTeam);
         }
     }

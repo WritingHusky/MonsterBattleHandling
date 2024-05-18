@@ -75,20 +75,25 @@ public class BattleSimulator {
             if (currentMove.getAccuracy() < rand.nextInt(0, 100)) {
                 // Add the miss to the display
                 Monster sourceMonster = turnInfoPackage.getMonsterBySlot(source);
-                String activation = sourceMonster.getName() + ":" + sourceMonster.getSlot() + " used " + currentMove.getMoveName();
+
+                // Build the message
+                String message = sourceMonster.getName() + ":" + sourceMonster.getMonsterCode() + " used " + currentMove.getMoveName();
                 turnInfoPackage.getTurnDisplayList()
-                        .addMSGToList(new TurnDisplayElement(activation, source, -1, "And Missed", target));
+                        .addMSGToList(TurnDisplayElementFactory.create("Message Header", message));
                 break;
             } else { // Technically this else is not needed, but it's here for clarity
                 // Add the Hit to the display
 
                 // Handle the case where the move is swap (when swap don't add hit to display
                 if(!currentMove.getMoveName().equals("Swap")){
-                Monster sourceMonster = turnInfoPackage.getMonsterBySlot(source);
-                Monster targetMonster = turnInfoPackage.getMonsterBySlot(target);
-                String activation = sourceMonster.getName() + ":" + sourceMonster.getSlot() + " used " + currentMove.getMoveName() + " on " + targetMonster.getName() + ":" + targetMonster.getSlot();
-                turnInfoPackage.getTurnDisplayList()
-                        .addMSGToList(new TurnDisplayElement(activation, source, 6, "And Hit", target));
+                    Monster sourceMonster = turnInfoPackage.getMonsterBySlot(source);
+                    Monster targetMonster = turnInfoPackage.getMonsterBySlot(target);
+
+                    // Build the message
+                    String message = sourceMonster.getName() + ":" + sourceMonster.getMonsterCode() + " used " + currentMove.getMoveName() +
+                            " on " + targetMonster.getName() + ":" + targetMonster.getMonsterCode();
+                    turnInfoPackage.getTurnDisplayList()
+                            .addMSGToList(TurnDisplayElementFactory.create("Message Header", message));
                 }
             }
 
@@ -167,22 +172,34 @@ public class BattleSimulator {
 
             // If the target is dead try to switch out
             if (turnInfoPackage.getMonsterBySlot(target).isDead()) {
+
                 Monster targetMonster = turnInfoPackage.getMonsterBySlot(target);
-                String activation = targetMonster.getName() + ":" + targetMonster.getSlot() + " has Died";
-                turnInfoPackage.getTurnDisplayList().getDisplayQ().add(TurnDisplayElementFactory
-                        .create(activation, target, 1, "Please switch them out", target));
+
+                // Build the message
+                String message = targetMonster.getName() + ":" + targetMonster.getMonsterCode() + " has Died";
+                turnInfoPackage.getTurnDisplayList().getDisplayList().add(TurnDisplayElementFactory.create("Message Header", message));
+//                System.out.println("Monster Died: "+ turnInfoPackage.getMonsterBySlot(target).getMonsterCode() + " (target-post-timer)");
+
+                // Clean Up the display list
                 turnInfoPackage.cleanTurnDisplayList();
-                System.out.println("Monster Died: "+ turnInfoPackage.getMonsterBySlot(target).getSlot() + " (target-post-timer)");
-                throw new DeadMonsterThrowable(turnInfoPackage.getMonsterBySlot(target).getSlot());
+
+                // Throw an error to stop the turn midway
+                throw new DeadMonsterThrowable(turnInfoPackage.getMonsterBySlot(target).getSlot()); // Uses the slot code
             }
             if (deathFlag && turnInfoPackage.getMonsterBySlot(source).isDead()){
+
                 Monster sourceMonster = turnInfoPackage.getMonsterBySlot(source);
-                String activation = sourceMonster.getName() + ":" + sourceMonster.getSlot() + " has Died";
-                turnInfoPackage.getTurnDisplayList().getDisplayQ().add(TurnDisplayElementFactory
-                        .create(activation, source, 1, "Please switch them out", source));
+
+                // Build the message
+                String message = sourceMonster.getName() + ":" + sourceMonster.getMonsterCode() + " has Died";
+                turnInfoPackage.getTurnDisplayList().getDisplayList().add(TurnDisplayElementFactory.create("Message Header", message));
+//                System.out.println("Monster Died: "+ turnInfoPackage.getMonsterBySlot(source).getMonsterCode() + " (source-post-timer)");
+
+                // Clean Up the display list
                 turnInfoPackage.cleanTurnDisplayList();
-                System.out.println("Monster Died: "+ turnInfoPackage.getMonsterBySlot(source).getSlot() + " (source-post-timer)");
-                throw new DeadMonsterThrowable(turnInfoPackage.getMonsterBySlot(source).getSlot());
+
+                // Throw an error to stop the turn midway
+                throw new DeadMonsterThrowable(turnInfoPackage.getMonsterBySlot(source).getSlot()); // Uses the slot code
             }
 
         } // Move Queue loop point
@@ -193,11 +210,11 @@ public class BattleSimulator {
          * Recalculate all relevant stats (will so be done at time of activation)
          * Clean up turnDisplayList? remove nones
          */
-//        turnInfoPackage.logger.finest("Cleaning Up package");
+        // Clean up the turnDisplayList
         turnInfoPackage.cleanUpPackage();
-        return turnInfoPackage;
 
-        // ??Send up the results of the turn?? (depends on output)
+        // Return the TurnInfoPackage
+        return turnInfoPackage;
     }
 
     /**

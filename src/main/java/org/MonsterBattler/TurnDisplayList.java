@@ -1,25 +1,24 @@
 package org.MonsterBattler;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
 
 public class TurnDisplayList {
-    public Queue<TurnDisplayElement> displayQ;
+    public ArrayList<TurnDisplayElement> displayList;
 
     public TurnDisplayList() {
-        this.displayQ = new LinkedList<>();
+        this.displayList = new ArrayList<>();
     }
 
     public void addMSGToList(TurnDisplayElement msgElement) {
-        this.displayQ.add(msgElement);
+        this.displayList.add(msgElement);
     }
 
-    public Queue<TurnDisplayElement> getDisplayQ() {
-        return this.displayQ;
+    public ArrayList<TurnDisplayElement> getDisplayList() {
+        return this.displayList;
     }
 
-    public void setDisplayQ(Queue<TurnDisplayElement> displayQ) {
-        this.displayQ = displayQ;
+    public void setDisplayList(ArrayList<TurnDisplayElement> displayList) {
+        this.displayList = displayList;
     }
 
     public String toJson() {
@@ -29,12 +28,12 @@ public class TurnDisplayList {
         // Append the queue elements manually
         jsonBuilder.append("\"displayQ\":[");
 
-        for (TurnDisplayElement element : this.displayQ) {
+        for (TurnDisplayElement element : this.displayList) {
             jsonBuilder.append(element.toJson()).append(",");
         }
 
         // Remove the trailing comma if there are elements in the queue
-        if (!displayQ.isEmpty()) {
+        if (!displayList.isEmpty()) {
             jsonBuilder.deleteCharAt(jsonBuilder.length() - 1);
         }
 
@@ -47,7 +46,7 @@ public class TurnDisplayList {
     @Override
     public String toString() {
         return "TurnDisplayList{" +
-                "displayQ=" + displayQ +
+                "displayList=" + displayList +
                 '}';
     }
 }

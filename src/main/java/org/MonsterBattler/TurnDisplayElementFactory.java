@@ -4,7 +4,15 @@ public class TurnDisplayElementFactory {
     public TurnDisplayElementFactory() {
     }
 
-    public static TurnDisplayElement create(String activationMsg, String slot, int msgCode, String resultMsg, String resultSlot) {
-        return new TurnDisplayElement(activationMsg, slot, msgCode, resultMsg, resultSlot);
+    public static TurnDisplayElement create(String messageType, String message) {
+        return new TurnDisplayElement(messageType, message);
+    }
+
+    public static TurnDisplayElement createErrorEffectResolver(Effect effect){
+        return TurnDisplayElementFactory.create("Error", "Nothing Happened (Effect resolver failed for effect: " + effect + ")");
+    }
+
+    public static TurnDisplayElement createErrorImplementation(Effect effect){
+        return TurnDisplayElementFactory.create("Error", "Nothing Happened (Effect Not implemented for effect: " + effect + ")");
     }
 }
